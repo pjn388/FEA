@@ -1,0 +1,54 @@
+
+% standard frame element represents a combined truss and beam element
+classdef FrameElement < Element2D
+    properties
+        A
+        E
+        l
+        I
+    end
+    methods
+        function obj = FrameElement(node_1, node_2, A, E, I)
+            obj = obj@Element2D(node_1, node_2, ["u", "v", "theta"]);
+            obj.A = A;
+            obj.E = E;
+            obj.l = abs(sqrt((node_1.x-node_2.x)^2+(node_1.y-node_2.y)^2)); % calculate member length
+            obj.I = I;
+        end
+        
+        function stiffness_matrix = get_stiffness_matrix(obj)
+            % cosines and sines for rotation matrix
+            l_ij = (obj.node_2.x - obj.node_1.x) / obj.l; % cos alpha
+            m_ij = (obj.node_2.y - obj.node_1.y) / obj.l; % sin alpha
+            
+            % Transformation matrix, you spin me round
+            T =[
+                l_ij ,m_ij,0,0    ,0   ,0;
+                -m_ij,l_ij,0,0    ,0   ,0;
+                0    ,0   ,1,0    ,0   ,0;
+                0    ,0   ,0,l_ij ,m_ij,0;
+                0    ,0   ,0,-m_ij,l_ij,0;
+                0    ,0   ,0,0    ,0   ,1 ...
+            ];
+            
+            % saving typing
+            A = obj.A;
+            E = obj.E;
+            l = obj.l;
+            I = obj.I;
+            
+            % Local stiffness matrix
+            k_local =[
+                E*A/l ,0          ,0         ,-E*A/l,0          ,0         ;
+                0     ,12*E*I/l^3 ,6*E*I/l^2 ,0     ,-12*E*I/l^3,6*E*I/l^2 ;
+                0     ,6*E*I/l^2  ,4*E*I/l   ,0     ,-6*E*I/l^2 ,2*E*I/l   ;
+                -E*A/l,0          ,0         ,E*A/l ,0          ,0         ;
+                0     ,-12*E*I/l^3,-6*E*I/l^2,0     ,12*E*I/l^3 ,-6*E*I/l^2;
+                0     ,6*E*I/l^2  ,2*E*I/l   ,0     ,-6*E*I/l^2 ,4*E*I/l ...
+            ];
+            
+            % Global stiffness matrix
+            stiffness_matrix = T' * k_local * T;
+        end
+    end
+end
