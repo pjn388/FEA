@@ -3,26 +3,29 @@
 classdef FrameElement < Element2D
     properties
         A
-        E
         l
         I
     end
     methods
         function obj = FrameElement(node_1, node_2, A, E, I)
-            obj = obj@Element2D(node_1, node_2, ["u", "v", "theta"]);
+            obj = obj@Element2D(node_1, node_2, ["u", "v", "theta"], E);
             obj.A = A;
-            obj.E = E;
             obj.l = abs(sqrt((node_1.x-node_2.x)^2+(node_1.y-node_2.y)^2)); % calculate member length
             obj.I = I;
         end
-        
-        function stiffness_matrix = get_stiffness_matrix(obj)
+
+        function shape_matrix = get_shape_matrix(obj, x, y)
+            l = obj.l;
+            shape_matrix = [-1/l, -y/l^3*(12*x-6*l), -y/l^2*(6*x-4*l), 1/l, y/l^3*(12*x-6*l), y/l^2*(6*x-2*l)];
+        end
+
+        function tranformation_matrix = get_tranformation_matrix(obj)
             % cosines and sines for rotation matrix
             l_ij = (obj.node_2.x - obj.node_1.x) / obj.l; % cos alpha
             m_ij = (obj.node_2.y - obj.node_1.y) / obj.l; % sin alpha
             
             % Transformation matrix, you spin me round
-            T =[
+            obj.T =[
                 l_ij ,m_ij,0,0    ,0   ,0;
                 -m_ij,l_ij,0,0    ,0   ,0;
                 0    ,0   ,1,0    ,0   ,0;
@@ -30,7 +33,12 @@ classdef FrameElement < Element2D
                 0    ,0   ,0,-m_ij,l_ij,0;
                 0    ,0   ,0,0    ,0   ,1 ...
             ];
-            
+
+            tranformation_matrix = obj.T;
+        end
+        
+        function stiffness_matrix = get_stiffness_matrix(obj)  
+            T = obj.get_tranformation_matrix();   
             % saving typing
             A = obj.A;
             E = obj.E;

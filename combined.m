@@ -2,6 +2,7 @@ clear all; clc;
 
 % Conversion to unit not invented by drunk mathematicians rolling dice
 in = 0.0254;
+mm = 10^-3;
 lb = 0.453592;
 g = 9.81;
 
@@ -25,7 +26,7 @@ nodes ={node_A, node_B_m, node_C, node_D_m, node_E, node_F, node_G, node_H, node
 
 
 % temp element properties
-A = 100; E = 2.7*10^9; I = 10;
+A = 3*mm*3*mm; E = 2.7*10^9; I = 0.0001;
 
 
 % define the elements
@@ -59,3 +60,8 @@ node_I.apply_loading(["u", "v"], [0, -300 * lb * g]); % I
 
 % Do all the calculations with this configured setup
 run("main.m")
+
+
+% get stresses
+
+element_HI.get_stress(0, 0)

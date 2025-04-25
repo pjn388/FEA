@@ -2,28 +2,38 @@
 classdef TrussElement < Element2D
     properties
         A
-        E
         l
     end
     methods
         function obj = TrussElement(node_1, node_2, A, E)
-            obj = obj@Element2D(node_1, node_2, ["u", "v"]);
+            obj = obj@Element2D(node_1, node_2, ["u", "v"], E);
             obj.A = A;
-            obj.E = E;
             obj.l = abs(sqrt((node_1.x-node_2.x)^2+(node_1.y-node_2.y)^2)); % calculate member length
+
         end
 
-       function stiffness_matrix = get_stiffness_matrix(obj)
+        function tranformation_matrix = get_tranformation_matrix(obj)
             % rotaion vlaues
             l_ij = (obj.node_2.x - obj.node_1.x) / obj.l; % cos alpha
             m_ij = (obj.node_2.y - obj.node_1.y) / obj.l; % sin alpha
             
             % rotaion matrix
-            T = [
+            obj.T = [
                 l_ij , m_ij,     0,    0;
                     0,    0,  l_ij, m_ij;
             ];
-            
+
+            tranformation_matrix = obj.T;
+        end
+
+
+        function shape_matrix = get_shape_matrix(obj, x, y)
+            % this is the non rotated shape function for the member does nto account for the variation across the member
+            shape_matrix = [-1/obj.l, 1/obj.l]*obj.T;
+        end
+
+       function stiffness_matrix = get_stiffness_matrix(obj)
+            T = obj.get_tranformation_matrix();
             % local stiffness matrix
             k_local = obj.A*obj.E/obj.l *...
             [

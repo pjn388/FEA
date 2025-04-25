@@ -145,7 +145,7 @@ end
 % eq = symbolic_vars == double(displacements);
 
 % factor to exagerate the displacement by for rendering
-exageration_factor = 10^6;
+exageration_factor = 1;
 
 % iterate through the nodes and add the displacements to their position
 for i = 1:length(nodes)
@@ -154,8 +154,7 @@ for i = 1:length(nodes)
     end
     node = nodes{i};
 
-    dx = 0;
-    dy = 0;
+    node_displacements = zeros(length(node.dof));
 
     for dof_index = 1:length(node.dof)
         dof = node.dof{1, dof_index};
@@ -164,19 +163,15 @@ for i = 1:length(nodes)
         % Find the index of the displacement in the symbolic_vars
         displacement_index = find(strcmp(string(symbolic_vars), row_name));
 
-        % If the displacement is found, extract its numerical value
-        if ~isempty(displacement_index)
-            if dof == "u"
-                dx = displacements(displacement_index)*exageration_factor;
-            elseif dof == "v"
-                dy = displacements(displacement_index)*exageration_factor;
-            end
+        % If no displaccement found ignore and warn
+        if isempty(displacement_index)
+            warning("Could not find the displacement index: "+displacement_index)
+            continue;
         end
+        node_displacements(dof_index) = displacements(displacement_index);
     end
 
-    % Update node position. This is destructive of the original node positions so be carefull when debugginh
-    node.x = node.x + dx;
-    node.y = node.y + dy;
+    node.apply_displacement(node.dof, node_displacements)
 end
 
 % render displaced mesh

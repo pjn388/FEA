@@ -21,35 +21,36 @@ function render_structure(elements, nodes, affix, style)
     % render all the nodes
     for i = 1:length(nodes)
         node = nodes{i};
+        [x, y] = get_node_xy(node);
         % Determine node colour based on class
         if isa(node, 'FixedNode2D')
             colour = fixedNodeColour;
             marker = 's'; % Square marker for fixed nodes
             if isempty(fixedNodeHandle)
-                fixedNodeHandle = plot(node.x, node.y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                fixedNodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
             else
-                plot(node.x, node.y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
             end
         elseif isa(node, 'Node2D')
             colour = nodeColour;
             marker = 'o'; % Circle marker for regular nodes
             if isempty(nodeHandle)
-                nodeHandle = plot(node.x, node.y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                nodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
             else
-                plot(node.x, node.y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
             end
         else
             % TODO: implement some hash funciton to colour generator so unique members are unique colours
             colour = 'k'; % Black for unknown node types
             marker = '*';
-            plot(node.x, node.y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+            plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
         end
 
-        nodePositions(i, :) = [node.x, node.y];
+        nodePositions(i, :) = [x, y];
 
         % Initial text position
-        x_text = node.x + 0.05;
-        y_text = node.y + 0.05;
+        x_text = x + 0.05;
+        y_text = y + 0.05;
         textHandles{i} = text(x_text, y_text, sprintf('Node %s (%s) - %s', node.uuid, strjoin(node.dof, ', '), affix), 'FontSize', 8);
     end
 
@@ -76,11 +77,8 @@ function render_structure(elements, nodes, affix, style)
         element = elements{i};
 
         % Get node coordinates
-        x1 = element.node_1.x;
-        y1 = element.node_1.y;
-        x2 = element.node_2.x;
-        y2 = element.node_2.y;
-
+        [x1, y1] = get_node_xy(element.node_1);
+        [x2, y2] = get_node_xy(element.node_2);
         % Determine element colour based on class
         if isa(element, 'FrameElement')
             colour = frameColour;
@@ -110,4 +108,24 @@ function render_structure(elements, nodes, affix, style)
     ylabel('Y Coordinate');
     axis equal;
     grid on;
+end
+
+function [x, y] = get_node_xy(node)
+    x = node.x;
+    y = node.y;
+
+    if isempty(node.displacement) || isempty(node.dof)
+        return;
+    end
+
+    dof_x_index = find(strcmp(node.dof, 'u'));
+    dof_y_index = find(strcmp(node.dof, 'v'));
+
+    if ~isempty(dof_x_index) && dof_x_index <= length(node.displacement)
+        x = x + node.displacement(dof_x_index);
+    end
+
+    if ~isempty(dof_y_index) && dof_y_index <= length(node.displacement)
+        y = y + node.displacement(dof_y_index);
+    end
 end
