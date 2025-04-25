@@ -29,7 +29,7 @@ classdef TrussElement < Element2D
 
         function shape_matrix = get_shape_matrix(obj, x, y)
             % this is the non rotated shape function for the member does nto account for the variation across the member
-            shape_matrix = [-1/obj.l, 1/obj.l]*obj.T;
+            shape_matrix = [-1/obj.l, 1/obj.l]*obj.get_tranformation_matrix();
         end
 
        function stiffness_matrix = get_stiffness_matrix(obj)
@@ -42,6 +42,11 @@ classdef TrussElement < Element2D
             ];
             % global stiffness matrix
             stiffness_matrix = T' * k_local * T;
+        end
+
+        % The relevent stress state of this member
+        function states = get_stress_states(obj)
+            states = ["Stress", obj.get_stress(0, 0)];
         end
     end
 end

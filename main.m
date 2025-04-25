@@ -5,7 +5,7 @@
 % plot the initial state
 figure;
 hold on;
-render_structure(elements, nodes,"base", "-");
+render_structure(elements, nodes, false);
 
 
 % What do our nodes and elemnts look like
@@ -176,4 +176,4 @@ end
 
 % render displaced mesh
 hold on;
-render_structure(elements, nodes,"displaced", "--");
+render_structure(elements, nodes, true);

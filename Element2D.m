@@ -57,26 +57,36 @@ classdef Element2D
             if (length(obj.node_1.dof) ~= length(obj.node_1.loading)) || (length(obj.node_2.dof) ~= length(obj.node_2.loading))
                 warning("Loading and dof are differnt size this should be an impossible state. How have you done this? (it's probably my fault)")
             end
-
+        
+            node_1_loading = get_relevant_dof(obj.node_1.dof, obj.node_1.loading, obj.dof);
+            node_2_loading = get_relevant_dof(obj.node_2.dof, obj.node_2.loading, obj.dof);
+        
             arrayout = zeros(length(obj.dof)*2, 1);
-
             % assing the correct section of the out matrix to the correct setion of the nodes loading matrix
-            arrayout(1:length(obj.node_1.loading)) = obj.node_1.loading(:);
-            arrayout(length(obj.dof)+1:length(obj.dof)+length(obj.node_2.loading)) = obj.node_2.loading(:);
-
+            arrayout(1:length(node_1_loading)) = node_1_loading(:);
+            arrayout(length(obj.dof)+1:length(obj.dof)+length(node_2_loading)) = node_2_loading(:);
+        
             obj.loading_matrix = arrayout;
             loading_matrix = obj.loading_matrix;
         end
         function displacement_matrix = get_displacement_matrix(obj)
+            if isa(obj.node_1, 'FixedNode2D') % fixed nodes have 0 displacement by definiton
+                obj.node_1.displacement = zeros(length(obj.node_1.dof), 1);
+            end
+            if isa(obj.node_2, 'FixedNode2D') % fixed nodes have 0 displacement by definiton
+                obj.node_2.displacement = zeros(length(obj.node_2.dof), 1);
+            end
             if (length(obj.node_1.dof) ~= length(obj.node_1.displacement)) || (length(obj.node_2.dof) ~= length(obj.node_2.displacement))
                 warning("Displacement and dof are differnt size this should be an impossible state. How have you done this? (it's probably my fault)")
             end
+            node_1_displacement = get_relevant_dof(obj.node_1.dof, obj.node_1.displacement, obj.dof);
+            node_2_displacement = get_relevant_dof(obj.node_2.dof, obj.node_2.displacement, obj.dof);
 
             arrayout = zeros(length(obj.dof)*2, 1);
 
             % assing the correct section of the out matrix to the correct setion of the nodes displacement matrix
-            arrayout(1:length(obj.node_1.displacement)) = obj.node_1.displacement(:);
-            arrayout(length(obj.dof)+1:length(obj.dof)+length(obj.node_2.displacement)) = obj.node_2.displacement(:);
+            arrayout(1:length(node_1_displacement)) = node_1_displacement(:);
+            arrayout(length(obj.dof)+1:length(obj.dof)+length(node_2_displacement)) = node_2_displacement(:);
 
             obj.displacement_matrix = arrayout;
             displacement_matrix = obj.displacement_matrix;
@@ -91,7 +101,9 @@ classdef Element2D
         end
 
         function stress = get_stress(obj, x, y)
-            stress = obj.E*obj.get_shape_matrix(x, y)*obj.get_tranformation_matrix()*obj.get_displacement_matrix();
+            obj.E*obj.get_shape_matrix(x, y)
+            obj.get_displacement_matrix()
+            stress = obj.E*obj.get_shape_matrix(x, y)*obj.get_displacement_matrix();
         end
         
     end
@@ -134,5 +146,17 @@ function T = matrix_to_table(matrix_data, node_1, node_2, dof, varargin)
         T = array2table(matrix_data, ...
             'VariableNames', dof_labels, ...
             'RowNames', dof_labels);
+    end
+end
+
+
+% gets the relevent dof's values from an array of dof's and their values
+function relevant_values = get_relevant_dof(dofs, values, relevant_dofs)
+    relevant_values = zeros(length(relevant_dofs), 1);
+    for i = 1:length(relevant_dofs)
+        dof_index = find(strcmp(dofs, relevant_dofs{i}));
+        if ~isempty(dof_index)
+            relevant_values(i) = values(dof_index);
+        end
     end
 end

@@ -5,18 +5,20 @@ classdef FrameElement < Element2D
         A
         l
         I
+        r
     end
     methods
-        function obj = FrameElement(node_1, node_2, A, E, I)
+        function obj = FrameElement(node_1, node_2, A, E, I, r)
             obj = obj@Element2D(node_1, node_2, ["u", "v", "theta"], E);
             obj.A = A;
             obj.l = abs(sqrt((node_1.x-node_2.x)^2+(node_1.y-node_2.y)^2)); % calculate member length
             obj.I = I;
+            obj.r = r; % this is the distance form neutral axis to the beam top/bottom
         end
 
         function shape_matrix = get_shape_matrix(obj, x, y)
             l = obj.l;
-            shape_matrix = [-1/l, -y/l^3*(12*x-6*l), -y/l^2*(6*x-4*l), 1/l, y/l^3*(12*x-6*l), y/l^2*(6*x-2*l)];
+            shape_matrix = [-1/l, -y/l^3*(12*x-6*l), -y/l^2*(6*x-4*l), 1/l, y/l^3*(12*x-6*l), y/l^2*(6*x-2*l)]*obj.get_tranformation_matrix();
         end
 
         function tranformation_matrix = get_tranformation_matrix(obj)
@@ -58,5 +60,16 @@ classdef FrameElement < Element2D
             % Global stiffness matrix
             stiffness_matrix = T' * k_local * T;
         end
+        
+        % The areas of concern for stresses in the element
+        function states = get_stress_states(obj)
+            states = [...
+                "node_1 top", obj.get_stress(0, obj.r),...
+                "node_1 bottom", obj.get_stress(0, -obj.r),...
+                "node_2 top", obj.get_stress(obj.l, obj.r),...
+                "node_2 bottom", obj.get_stress(obj.l, -obj.r),...
+            ];
+        end
+
     end
 end

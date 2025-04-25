@@ -1,6 +1,9 @@
 % Renders any compatable mesh
 
-function render_structure(elements, nodes, affix, style)
+
+% TODO: Clean this function up to be neeter and not such an ugnly mess
+
+function render_structure(elements, nodes, isStressed)
     % Node Colours based on Class
     fixedNodeColour = 'r'; % Red for FixedNode
     nodeColour = 'b'; % Blue for Node2D
@@ -15,29 +18,58 @@ function render_structure(elements, nodes, affix, style)
     frameHandle = [];
     trussHandle = [];
 
+    fixedNodeHandleStressed = [];
+    nodeHandleStressed = [];
+    frameHandleStressed = [];
+    trussHandleStressed = [];
+
     nodePositions = zeros(length(nodes), 2);
     textHandles = cell(length(nodes), 1);
-
+    elementTextHandles = cell(length(elements), 1);
+    
     % render all the nodes
+    if isStressed
+        affix = 'Stressed';
+        style = '-';
+    else
+        affix = '';
+        style = '--';
+    end
     for i = 1:length(nodes)
         node = nodes{i};
-        [x, y] = get_node_xy(node);
+        [x, y] = get_node_xy(node, isStressed);
         % Determine node colour based on class
         if isa(node, 'FixedNode2D')
             colour = fixedNodeColour;
             marker = 's'; % Square marker for fixed nodes
-            if isempty(fixedNodeHandle)
-                fixedNodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+            if isStressed
+                if isempty(fixedNodeHandleStressed)
+                    fixedNodeHandleStressed = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                else
+                    plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                end
             else
-                plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                if isempty(fixedNodeHandle)
+                    fixedNodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                else
+                    plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                end
             end
         elseif isa(node, 'Node2D')
             colour = nodeColour;
             marker = 'o'; % Circle marker for regular nodes
-            if isempty(nodeHandle)
-                nodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+            if isStressed
+                 if isempty(nodeHandleStressed)
+                    nodeHandleStressed = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                else
+                    plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                end
             else
-                plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                if isempty(nodeHandle)
+                    nodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                else
+                    plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+                end
             end
         else
             % TODO: implement some hash funciton to colour generator so unique members are unique colours
@@ -75,33 +107,99 @@ function render_structure(elements, nodes, affix, style)
     % render elements
     for i = 1:length(elements)
         element = elements{i};
-
+        
         % Get node coordinates
-        [x1, y1] = get_node_xy(element.node_1);
-        [x2, y2] = get_node_xy(element.node_2);
+        [x1, y1] = get_node_xy(element.node_1, isStressed);
+        [x2, y2] = get_node_xy(element.node_2, isStressed);
+        mid_x = (x1 + x2) / 2;
+        mid_y = (y1 + y2) / 2;
+
         % Determine element colour based on class
         if isa(element, 'FrameElement')
             colour = frameColour;
-            if isempty(frameHandle)
-                frameHandle = plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+            if isStressed
+                if isempty(frameHandleStressed)
+                    frameHandleStressed = plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                else
+                    plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                end
             else
-                plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                if isempty(frameHandle)
+                    frameHandle = plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                else
+                    plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                end
             end
         elseif isa(element, 'TrussElement')
             colour = trussColour;
-            if isempty(trussHandle)
-                trussHandle = plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+             if isStressed
+                if isempty(trussHandleStressed)
+                    trussHandleStressed = plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                else
+                    plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                end
             else
-                plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                if isempty(trussHandle)
+                    trussHandle = plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                else
+                    plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
+                end
             end
         else
             colour = 'k';
             plot([x1, x2], [y1, y2], 'Color', colour, 'LineWidth', 2, 'LineStyle', style);
         end
+
+        if isStressed
+            stress_info = element.get_stress_states();
+            stress_text = '';
+            for k = 1:2:length(stress_info)
+                stress_name = stress_info{k};
+                stress_value = stress_info{k+1};
+                stress_display = render_stress(double(string(stress_value)));
+                stress_text = sprintf('%s%s: %s\n', stress_text, stress_name, stress_display);
+            end
+            elementTextHandles{i} = text(mid_x, mid_y, stress_text, 'FontSize', 8, 'HorizontalAlignment', 'center');
+        end
+    end
+
+    legendHandles = [];
+    legendLabels = {};
+    if ~isempty(fixedNodeHandle)
+        legendHandles = [legendHandles, fixedNodeHandle];
+        legendLabels = [legendLabels, {'Fixed Node'}];
+    end
+    if ~isempty(nodeHandle)
+        legendHandles = [legendHandles, nodeHandle];
+        legendLabels = [legendLabels, {'Node'}];
+    end
+    if ~isempty(frameHandle)
+        legendHandles = [legendHandles, frameHandle];
+        legendLabels = [legendLabels, {'Frame Element'}];
+    end
+    if ~isempty(trussHandle)
+        legendHandles = [legendHandles, trussHandle];
+        legendLabels = [legendLabels, {'Truss Element'}];
+    end
+     if ~isempty(fixedNodeHandleStressed)
+        legendHandles = [legendHandles, fixedNodeHandleStressed];
+        legendLabels = [legendLabels, {'Fixed Node Stressed'}];
+    end
+    if ~isempty(nodeHandleStressed)
+        legendHandles = [legendHandles, nodeHandleStressed];
+        legendLabels = [legendLabels, {'Node Stressed'}];
+    end
+    if ~isempty(frameHandleStressed)
+        legendHandles = [legendHandles, frameHandleStressed];
+        legendLabels = [legendLabels, {'Frame Element Stressed'}];
+    end
+    if ~isempty(trussHandleStressed)
+        legendHandles = [legendHandles, trussHandleStressed];
+        legendLabels = [legendLabels, {'Truss Element Stressed'}];
     end
 
     % Add legend. has issues cos displaced and non displaced are different but also the same its a later problem
-    legend([fixedNodeHandle, nodeHandle, frameHandle, trussHandle], {'Fixed Node', 'Node', 'Frame Element', 'Truss Element'});
+    legend(legendHandles, legendLabels);
 
     title('Structure Visualization');
     xlabel('X Coordinate');
@@ -110,11 +208,11 @@ function render_structure(elements, nodes, affix, style)
     grid on;
 end
 
-function [x, y] = get_node_xy(node)
+function [x, y] = get_node_xy(node, isStressed)
     x = node.x;
     y = node.y;
 
-    if isempty(node.displacement) || isempty(node.dof)
+    if isempty(node.displacement) || isempty(node.dof) || ~isStressed
         return;
     end
 
@@ -127,5 +225,18 @@ function [x, y] = get_node_xy(node)
 
     if ~isempty(dof_y_index) && dof_y_index <= length(node.displacement)
         y = y + node.displacement(dof_y_index);
+    end
+end
+
+function stress_str = render_stress(stress_pa)
+    abs_stress = abs(stress_pa);
+    if abs_stress >= 1e9
+        stress_str = sprintf('%.2f GPa', stress_pa / 1e9);
+    elseif abs_stress >= 1e6
+        stress_str = sprintf('%.2f MPa', stress_pa / 1e6);
+    elseif abs_stress >= 1e3
+        stress_str = sprintf('%.2f kPa', stress_pa / 1e3);
+    else
+        stress_str = sprintf('%.2f Pa', stress_pa);
     end
 end

@@ -3,6 +3,7 @@ clear all; clc;
 % Conversion to unit not invented by drunk mathematicians rolling dice
 in = 0.0254;
 mm = 10^-3;
+GPa = 10^9;
 lb = 0.453592;
 g = 9.81;
 
@@ -25,22 +26,33 @@ node_D_p = Node2D(     (72      )*in     ,(24+30+24)*in);
 nodes ={node_A, node_B_m, node_C, node_D_m, node_E, node_F, node_G, node_H, node_I, node_B_p, node_D_p};
 
 
+% beams supports
+% https://beamdimensions.com/database/Australian/Steel_(250_Grade)/Rect_hollow_sections_(350)/50x25x1.6_RHS/
+I_beam = 70200*mm^4;
+A_beam = 223*mm^2;
+r_beam = 25*mm;
+
+% beam connectors
+% https://beamdimensions.com/database/Australian/Steel_(250_Grade)/Rect_hollow_sections_(450)/50x20x1.6_RHS/
+I_connect = 60800*mm^4;
+A_connect = 207*mm^2;
+
 % temp element properties
-A = 3*mm*3*mm; E = 2.7*10^9; I = 0.0001;
+A = 3*mm*3*mm; E = 200*GPa; I = 0.0001;
 
 
 % define the elements
-element_AF     = FrameElement(node_A          ,node_F     ,A       ,E   ,I);
-element_FB_m   = FrameElement(node_F          ,node_B_m   ,A       ,E   ,I);
-element_CE     = FrameElement(node_C          ,node_E     ,A       ,E   ,I);
-element_ED_m   = FrameElement(node_E          ,node_D_m   ,A       ,E   ,I);
-element_EF     = TrussElement(node_E          ,node_F     ,A       ,E     );
-element_FG     = TrussElement(node_F          ,node_G     ,A       ,E     );
-element_D_mB_m     = TrussElement(node_D_m          ,node_B_m     ,A       ,E     );
+element_AF     = FrameElement(node_A          ,node_F     ,A_beam       ,E   ,I_beam, r_beam);
+element_FB_m   = FrameElement(node_F          ,node_B_m   ,A_beam       ,E   ,I_beam, r_beam);
+element_CE     = FrameElement(node_C          ,node_E     ,A_beam       ,E   ,I_beam, r_beam);
+element_ED_m   = FrameElement(node_E          ,node_D_m   ,A_beam       ,E   ,I_beam, r_beam);
+element_EF     = TrussElement(node_E          ,node_F     ,A_connect       ,E     );
+element_FG     = TrussElement(node_F          ,node_G     ,A_connect       ,E     );
+% element_D_mB_m     = TrussElement(node_D_m          ,node_B_m     ,A       ,E     ); % i dont this this is neccessary
 
-element_B_pD_p = FrameElement(node_B_p        ,node_D_p        ,A       ,E   ,I);
-element_B_pH   = FrameElement(node_B_p        ,node_H     ,A       ,E   ,I);
-element_HI     = FrameElement(node_H          ,node_I     ,A       ,E   ,I);
+element_B_pD_p = FrameElement(node_B_p        ,node_D_p        ,A       ,E   ,I, 10*mm);
+element_B_pH   = FrameElement(node_B_p        ,node_H     ,A       ,E   ,I, 10*mm);
+element_HI     = FrameElement(node_H          ,node_I     ,A       ,E   ,I, 10*mm);
 
 elements = {element_AF, element_FB_m, element_CE, element_ED_m, element_EF, element_FG, element_B_pD_p, element_B_pH, element_HI};
 
@@ -60,8 +72,3 @@ node_I.apply_loading(["u", "v"], [0, -300 * lb * g]); % I
 
 % Do all the calculations with this configured setup
 run("main.m")
-
-
-% get stresses
-
-element_HI.get_stress(0, 0)
