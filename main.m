@@ -5,17 +5,18 @@
 % plot the initial state
 figure;
 hold on;
-[legendHandles, legendLabels] = render_structure(elements, nodes, false, [], cell(0, 0));
+[legendHandles, legendLabels] = render_structure(elements, nodes, false, [], cell(0, 0), name);
 
 
-% What do our nodes and elemnts look like
-for i = 1:length(nodes)
-    nodes{1, i}.display();
-end
+% Does somke nice rendering of nodes and elements TODO: uncomment prior to submission
+% % What do our nodes and elemnts look like
+% for i = 1:length(nodes)
+%     nodes{1, i}.display();
+% end
 
-for i = 1:length(elements)
-    elements{1, i}.display()
-end
+% for i = 1:length(elements)
+%     elements{1, i}.display()
+% end
 
 % collect stiffness tables
 stiffness_tables = cell(1, length(elements));
@@ -106,10 +107,6 @@ global_K_table(:,rows_to_eliminate) = [];
 % Eliminate rows from global_F_table (assuming rows correspond to nodes)
 global_F_table(rows_to_eliminate,:) = [];
 
-global_K_table
-global_F_table
-
-
 global_K = table2array(global_K_table);
 global_F = table2array(global_F_table);
 
@@ -123,8 +120,7 @@ for i = 1:length(symbolic_vars)
 end
 
 % calculate the displacements
-displacements = inv(global_K)*global_F
-
+displacements = inv(global_K)*global_F;
 
 % elimated dof's will have the same value as the dos that elimated them. sub that value back into displacements
 for i = 1:length(eliminated_dofs)
@@ -156,6 +152,7 @@ for i = 1:length(nodes)
     if isa(nodes{i}, 'FixedNode2D') || isa(nodes{i}, 'PinnedNode2D')
         continue;
     end
+
     node = nodes{i};
 
     node_displacements = zeros(length(node.dof));
@@ -163,10 +160,10 @@ for i = 1:length(nodes)
     for dof_index = 1:length(node.dof)
         dof = node.dof{1, dof_index};
         row_name = "Node_" + node.uuid + "_" + dof;
-
+        
         % Find the index of the displacement in the symbolic_vars
         displacement_index = find(strcmp(string(symbolic_vars), row_name));
-
+        
         % If no displaccement found ignore and warn
         if isempty(displacement_index)
             warning("Could not find the displacement index: "+displacement_index)
@@ -174,10 +171,10 @@ for i = 1:length(nodes)
         end
         node_displacements(dof_index) = displacements(displacement_index);
     end
-
-    node.apply_displacement(node.dof, node_displacements)
+    node.set_displacement(node.dof, node_displacements);
+    disp("node_"+node_names{i}+": "+node.display_())
 end
 
 % render displaced mesh
 hold on;
-render_structure(elements, nodes, true, legendHandles, legendLabels);
+render_structure(elements, nodes, true, legendHandles, legendLabels, name);

@@ -3,7 +3,7 @@
 
 % TODO: Clean this function up to be neeter and not such an ugnly mess
 
-function [legendHandles, legendLabels] = render_structure(elements, nodes, isStressed, legendHandles, legendLabels)
+function [legendHandles, legendLabels] = render_structure(elements, nodes, isStressed, legendHandles, legendLabels, name)
     % Node Colours based on Class
     fixedNodeColour = 'r'; % Red for FixedNode
     pinnednodeColour = 'c';
@@ -202,7 +202,7 @@ function [legendHandles, legendLabels] = render_structure(elements, nodes, isStr
     legendLabels = legendLabels(uniqueIdx);
     legend(legendHandles, legendLabels, 'Location', 'northwest');
 
-    title('Structure Visualization');
+    title(name);
     xlabel('X Coordinate (m)');
     ylabel('Y Coordinate (m)');
     axis equal;
@@ -226,18 +226,5 @@ function [x, y] = get_node_xy(node, isStressed)
 
     if ~isempty(dof_y_index) && dof_y_index <= length(node.displacement)
         y = y + node.displacement(dof_y_index);
-    end
-end
-
-function stress_str = render_stress(stress_pa)
-    abs_stress = abs(stress_pa);
-    if abs_stress >= 1e9
-        stress_str = sprintf('%.2f GPa', stress_pa / 1e9);
-    elseif abs_stress >= 1e6
-        stress_str = sprintf('%.2f MPa', stress_pa / 1e6);
-    elseif abs_stress >= 1e3
-        stress_str = sprintf('%.2f kPa', stress_pa / 1e3);
-    else
-        stress_str = sprintf('%.2f Pa', stress_pa);
     end
 end

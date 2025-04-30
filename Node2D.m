@@ -38,7 +38,7 @@ classdef Node2D < handle
             obj = obj;
         end
 
-        function obj = apply_displacement(obj, dofs, displacements)
+        function obj = set_displacement(obj, dofs, displacements)
             % Iterate through the dofs and apply the corresponding displacement state
             for i = 1:length(dofs)
                 idx = find(obj.dof == dofs(i), 1);
@@ -46,18 +46,17 @@ classdef Node2D < handle
                     if isempty(obj.displacement)
                         obj.displacement = zeros(1, length(obj.dof));
                     end
-                    obj.displacement(idx) = obj.displacement(idx) + displacements(i);
+                    obj.displacement(idx) = displacements(i);
                 else
                     error('Cannot apply a displacement for dof '+dofs(1)+' as that dof does not exist for this node.')
                 end
             end
             obj = obj;
         end
-        
-        % Anotehr helpfull display method for nodes
-        function display(obj)
-            className = class(obj);
 
+        function out = display_(obj)
+            className = class(obj);
+    
             if isempty(obj.loading)
                 loadingStr = '[]';
             else
@@ -69,7 +68,12 @@ classdef Node2D < handle
                 displacementStr = strjoin(arrayfun(@num2str, obj.displacement, 'UniformOutput', false), ', ');
             end
             % btw i hate matlab string bashing
-            disp(strjoin([className, '(',obj.uuid,'): x = ', num2str(obj.x), ', y = ', num2str(obj.y), ', dof = [',strjoin(string(obj.dof), ", "), '], loading = [', loadingStr, '], displacement = [', displacementStr, ']'], ''));
+            out = strjoin([className, '(',obj.uuid,'): x = ', num2str(obj.x), ', y = ', num2str(obj.y), ', dof = [',strjoin(string(obj.dof), ", "), '], loading = [', loadingStr, '], displacement = [', displacementStr, ']'], '');
+        end
+        
+        % Anotehr helpfull display method for nodes
+        function display(obj)
+            disp(obj.display_())
         end
     end
 end
