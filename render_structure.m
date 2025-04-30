@@ -3,9 +3,10 @@
 
 % TODO: Clean this function up to be neeter and not such an ugnly mess
 
-function render_structure(elements, nodes, isStressed)
+function [legendHandles, legendLabels] = render_structure(elements, nodes, isStressed, legendHandles, legendLabels)
     % Node Colours based on Class
     fixedNodeColour = 'r'; % Red for FixedNode
+    pinnednodeColour = 'c';
     nodeColour = 'b'; % Blue for Node2D
 
     % Element Colours based on Class
@@ -14,11 +15,11 @@ function render_structure(elements, nodes, isStressed)
 
     % Store handles for legend
     fixedNodeHandle = [];
+    PinnedNodeHandle = [];
     nodeHandle = [];
     frameHandle = [];
     trussHandle = [];
-
-    fixedNodeHandleStressed = [];
+    
     nodeHandleStressed = [];
     frameHandleStressed = [];
     trussHandleStressed = [];
@@ -30,10 +31,10 @@ function render_structure(elements, nodes, isStressed)
     % render all the nodes
     if isStressed
         affix = 'Stressed';
-        style = '-';
+        style = '--';
     else
         affix = '';
-        style = '--';
+        style = '-';
     end
     for i = 1:length(nodes)
         node = nodes{i};
@@ -42,18 +43,18 @@ function render_structure(elements, nodes, isStressed)
         if isa(node, 'FixedNode2D')
             colour = fixedNodeColour;
             marker = 's'; % Square marker for fixed nodes
-            if isStressed
-                if isempty(fixedNodeHandleStressed)
-                    fixedNodeHandleStressed = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
-                else
-                    plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
-                end
+            if isempty(fixedNodeHandle)
+                fixedNodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
             else
-                if isempty(fixedNodeHandle)
-                    fixedNodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
-                else
-                    plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
-                end
+                plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+            end
+        elseif isa(node, 'PinnedNode2D')
+            colour = pinnednodeColour;
+            marker = 's'; % square marker for pinned nodes
+            if isempty(nodeHandle)
+                PinnedNodeHandle = plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
+            else
+                plot(x, y, marker, 'MarkerFaceColor', colour, 'MarkerEdgeColor', 'k', 'MarkerSize', 8);
             end
         elseif isa(node, 'Node2D')
             colour = nodeColour;
@@ -163,11 +164,13 @@ function render_structure(elements, nodes, isStressed)
         end
     end
 
-    legendHandles = [];
-    legendLabels = {};
     if ~isempty(fixedNodeHandle)
         legendHandles = [legendHandles, fixedNodeHandle];
         legendLabels = [legendLabels, {'Fixed Node'}];
+    end
+    if ~isempty(PinnedNodeHandle)
+        legendHandles = [legendHandles, PinnedNodeHandle];
+        legendLabels = [legendLabels, {'Pinned Node'}];
     end
     if ~isempty(nodeHandle)
         legendHandles = [legendHandles, nodeHandle];
@@ -181,10 +184,6 @@ function render_structure(elements, nodes, isStressed)
         legendHandles = [legendHandles, trussHandle];
         legendLabels = [legendLabels, {'Truss Element'}];
     end
-     if ~isempty(fixedNodeHandleStressed)
-        legendHandles = [legendHandles, fixedNodeHandleStressed];
-        legendLabels = [legendLabels, {'Fixed Node Stressed'}];
-    end
     if ~isempty(nodeHandleStressed)
         legendHandles = [legendHandles, nodeHandleStressed];
         legendLabels = [legendLabels, {'Node Stressed'}];
@@ -197,13 +196,15 @@ function render_structure(elements, nodes, isStressed)
         legendHandles = [legendHandles, trussHandleStressed];
         legendLabels = [legendLabels, {'Truss Element Stressed'}];
     end
-
-    % Add legend. has issues cos displaced and non displaced are different but also the same its a later problem
-    legend(legendHandles, legendLabels);
+    
+    [~, uniqueIdx] = unique(legendLabels, 'stable');
+    legendHandles = legendHandles(uniqueIdx);
+    legendLabels = legendLabels(uniqueIdx);
+    legend(legendHandles, legendLabels, 'Location', 'northwest');
 
     title('Structure Visualization');
-    xlabel('X Coordinate');
-    ylabel('Y Coordinate');
+    xlabel('X Coordinate (m)');
+    ylabel('Y Coordinate (m)');
     axis equal;
     grid on;
 end

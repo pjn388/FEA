@@ -18,7 +18,7 @@ classdef FrameElement < Element2D
 
         function shape_matrix = get_shape_matrix(obj, x, y)
             l = obj.l;
-            shape_matrix = [-1/l, -y/l^3*(12*x-6*l), -y/l^2*(6*x-4*l), 1/l, y/l^3*(12*x-6*l), y/l^2*(6*x-2*l)]*obj.get_tranformation_matrix();
+            shape_matrix = [-1/l, -y/l^3*(12*x-6*l), -y/l^2*(6*x-4*l), 1/l, y/l^3*(12*x-6*l), -y/l^2*(6*x-2*l)]*obj.get_tranformation_matrix();
         end
 
         function tranformation_matrix = get_tranformation_matrix(obj)
@@ -49,12 +49,12 @@ classdef FrameElement < Element2D
             
             % Local stiffness matrix
             k_local =[
-                E*A/l ,0          ,0         ,-E*A/l,0          ,0         ;
-                0     ,12*E*I/l^3 ,6*E*I/l^2 ,0     ,-12*E*I/l^3,6*E*I/l^2 ;
-                0     ,6*E*I/l^2  ,4*E*I/l   ,0     ,-6*E*I/l^2 ,2*E*I/l   ;
-                -E*A/l,0          ,0         ,E*A/l ,0          ,0         ;
-                0     ,-12*E*I/l^3,-6*E*I/l^2,0     ,12*E*I/l^3 ,-6*E*I/l^2;
-                0     ,6*E*I/l^2  ,2*E*I/l   ,0     ,-6*E*I/l^2 ,4*E*I/l ...
+                E*A/l , 0          , 0         , -E*A/l, 0          , 0         ;
+                0     , 12*E*I/l^3 , 6*E*I/l^2 , 0     , -12*E*I/l^3, 6*E*I/l^2 ;
+                0     , 6*E*I/l^2  , 4*E*I/l   , 0     , -6*E*I/l^2 , 2*E*I/l   ;
+                -E*A/l, 0          , 0         , E*A/l , 0          , 0         ;
+                0     , -12*E*I/l^3, -6*E*I/l^2, 0     , 12*E*I/l^3 , -6*E*I/l^2;
+                0     , 6*E*I/l^2  , 2*E*I/l   , 0     , -6*E*I/l^2 , 4*E*I/l ...
             ];
             
             % Global stiffness matrix
@@ -63,11 +63,12 @@ classdef FrameElement < Element2D
         
         % The areas of concern for stresses in the element
         function states = get_stress_states(obj)
+
             states = [...
-                "node_1 top", obj.get_stress(0, obj.r),...
-                "node_1 bottom", obj.get_stress(0, -obj.r),...
-                "node_2 top", obj.get_stress(obj.l, obj.r),...
-                "node_2 bottom", obj.get_stress(obj.l, -obj.r),...
+                sprintf("node(%s) top", obj.node_1.uuid) , obj.get_stress(0, obj.r),...
+                sprintf("node(%s) bottom", obj.node_1.uuid) , obj.get_stress(0, -obj.r),...
+                sprintf("node(%s) top", obj.node_2.uuid) , obj.get_stress(obj.l, obj.r),...
+                sprintf("node(%s) bottom", obj.node_2.uuid) , obj.get_stress(obj.l, -obj.r),...
             ];
         end
 

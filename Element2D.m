@@ -70,10 +70,10 @@ classdef Element2D
             loading_matrix = obj.loading_matrix;
         end
         function displacement_matrix = get_displacement_matrix(obj)
-            if isa(obj.node_1, 'FixedNode2D') % fixed nodes have 0 displacement by definiton
+            if isa(obj.node_1, 'FixedNode2D') || isa(obj.node_1, 'PinnedNode2D') % fixed nodes have 0 displacement by definiton
                 obj.node_1.displacement = zeros(length(obj.node_1.dof), 1);
             end
-            if isa(obj.node_2, 'FixedNode2D') % fixed nodes have 0 displacement by definiton
+            if isa(obj.node_2, 'FixedNode2D') || isa(obj.node_2, 'PinnedNode2D') % fixed nodes have 0 displacement by definiton
                 obj.node_2.displacement = zeros(length(obj.node_2.dof), 1);
             end
             if (length(obj.node_1.dof) ~= length(obj.node_1.displacement)) || (length(obj.node_2.dof) ~= length(obj.node_2.displacement))
@@ -101,8 +101,6 @@ classdef Element2D
         end
 
         function stress = get_stress(obj, x, y)
-            obj.E*obj.get_shape_matrix(x, y)
-            obj.get_displacement_matrix()
             stress = obj.E*obj.get_shape_matrix(x, y)*obj.get_displacement_matrix();
         end
         

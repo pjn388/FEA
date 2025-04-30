@@ -5,7 +5,7 @@
 % plot the initial state
 figure;
 hold on;
-render_structure(elements, nodes, false);
+[legendHandles, legendLabels] = render_structure(elements, nodes, false, [], cell(0, 0));
 
 
 % What do our nodes and elemnts look like
@@ -83,12 +83,16 @@ end
 % Create a list of row/column names to eliminate based on fixed nodes
 rows_to_eliminate = {};
 for i = 1:length(nodes)
-    if ~isa(nodes{i}, 'FixedNode2D') % ignore non fixed nodes
+    if ~isa(nodes{i}, 'FixedNode2D') && ~isa(nodes{i}, 'PinnedNode2D')  % ignore Free nodes
         continue;
     end
 
     node = nodes{1, i};
     for dof_index = 1:length(node.dof)
+        if ~ismember(node.dof(dof_index), node.constrained_dof)
+            continue;
+        end
+
         dof = node.dof{1, dof_index};
         row_name = "Node_" + node.uuid + "_" + dof;
         rows_to_eliminate = [rows_to_eliminate, row_name];
@@ -149,7 +153,7 @@ exageration_factor = 1;
 
 % iterate through the nodes and add the displacements to their position
 for i = 1:length(nodes)
-    if isa(nodes{i}, 'FixedNode2D')
+    if isa(nodes{i}, 'FixedNode2D') || isa(nodes{i}, 'PinnedNode2D')
         continue;
     end
     node = nodes{i};
@@ -176,4 +180,4 @@ end
 
 % render displaced mesh
 hold on;
-render_structure(elements, nodes, true);
+render_structure(elements, nodes, true, legendHandles, legendLabels);

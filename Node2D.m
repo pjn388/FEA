@@ -8,6 +8,7 @@ classdef Node2D < handle
         loading
         displacement
         uuid
+        constrained_dof
     end
 
     methods
@@ -18,6 +19,7 @@ classdef Node2D < handle
             obj.loading = [];
             obj.displacement = [];
             obj.uuid = extractBefore(string(java.util.UUID.randomUUID), 9); % generate a random uuid for each node. thx java i guess?
+            obj.constrained_dof = [];
         end
         
         function obj = apply_loading(obj, dofs, loadings)
