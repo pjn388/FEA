@@ -8,7 +8,7 @@ classdef Material
             obj.name = name;
         end
 
-        % Anotehr helpfull display method for nodes
+        % Another helpfull display method for materials
         function display(obj)
             disp("Material: "+obj.name)
         end

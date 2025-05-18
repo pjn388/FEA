@@ -84,7 +84,12 @@ function [legendHandles, legendLabels] = render_structure(elements, nodes, isStr
         % Initial text position
         x_text = x + 0.05;
         y_text = y + 0.05;
-        textHandles{i} = text(x_text, y_text, sprintf('Node %s (%s) - %s', node.uuid, strjoin(node.dof, ', '), affix), 'FontSize', 8);
+        if isempty(node.dof)
+            dof_list = "";
+        else
+            dof_list = strjoin(node.dof, ', ');
+        end
+        textHandles{i} = text(x_text, y_text, sprintf('Node %s (%s) - %s', node.uuid, dof_list, affix), 'FontSize', 8);
     end
 
     % Adjust text positions to avoid overlap, this isnt fun and isnt perfect but it will do
@@ -152,7 +157,7 @@ function [legendHandles, legendLabels] = render_structure(elements, nodes, isStr
         end
 
         if isStressed
-            stress_info = element.get_stress_states();
+            stress_info = element.get_solution_states();
             stress_text = '';
             for k = 1:2:length(stress_info)
                 stress_name = stress_info{k};

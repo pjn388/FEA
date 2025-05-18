@@ -45,8 +45,8 @@ classdef TrussElement < Element2Nodes
         end
 
         % The relevent stress state of this member
-        function states = get_stress_states(obj)
-            states = ["Stress", obj.get_stress(0, 0)];
+        function states = get_solution_states(obj)
+            states = ["Stress", obj.get_solution(0, 0)];
         end
     end
 end

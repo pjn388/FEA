@@ -122,7 +122,7 @@ function do_iteration(I_beam, A_beam, r_beam, A_connect, d_hydrolic, E, name)
     % Find and record maximum stresses
     max_stresses = zeros(1, numel(elements));
     for i = 1:numel(elements)
-        stress_states = elements{i}.get_stress_states();
+        stress_states = elements{i}.get_solution_states();
 
         max_stress = 0;
         for j = 1:numel(stress_states)

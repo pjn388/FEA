@@ -12,6 +12,10 @@ K = 1;
 mol = 1;
 candela = 1;
 
+% gravity
+g = 9.81 * m/s^2;
+
+
 % length
 in = 0.0254*m;
 mm = 10^-3*m;
@@ -20,12 +24,11 @@ mm = 10^-3*m;
 L = 10^-3 *m^3;
 mL = 10^-3 *L^3;
 
-% weight
+% mass
 lb = 0.453592*kg;
 
 % force
 N = kg*m/s^2;
-
 
 % Pressure
 Pa = N/m^2;
@@ -33,6 +36,19 @@ kPa = 10^3*Pa;
 MPa = 10^6*Pa;
 GPa = 10^9*Pa;
 
+% Torque
+Nm = N*m;
 
-% gravity
-g = 9.81 * m/s^2;
+% Energy
+J = Nm;
+kJ = 10^3*J;
+MJ = 10^6*J;
+GJ = 10^9*J;
+
+W = J/s;
+kW = 10^3*W;
+MW = 10^6*W;
+GW = 10^9*W;
+
+% temp
+degC = K; % this is multiplicative scalr so it doesnt account for the offset of 273.15

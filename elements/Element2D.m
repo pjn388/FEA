@@ -39,7 +39,10 @@ classdef Element2D
                 displayNode(obj.nodes{i});
             end
             fprintf('  Stiffness Matrix:\n');
-            disp(obj.get_stiffness_matrix());
+            disp(obj.get_stiffness_table());
+
+            fprintf('  Loading Matrix:\n');
+            disp(obj.get_loading_table());
         end
         
         % getters to ensure that calculations are performed before accessing values
@@ -100,26 +103,15 @@ classdef Element2D
         end
 
         % make relevent matrix tables
-        function T = stiffness_table(obj)
+        function T = get_stiffness_table(obj)
             T = matrix_to_table(obj.get_stiffness_matrix(), obj.nodes, obj.dof);
         end
-        function T = loading_table(obj)
+        function T = get_loading_table(obj)
             T = matrix_to_table(obj.get_loading_matrix(), obj.nodes, obj.dof, isload=true);
         end
 
-        function stress = get_stress(obj, x, y)
+        function stress = get_solution(obj, x, y)
             stress = obj.material.E*obj.get_shape_matrix(x, y)*obj.get_solution_matrix();
-        end
-    end
-end
-
-% gets the relevent dof's values from an array of dof's and their values
-function relevant_values = get_relevant_dof(dofs, values, relevant_dofs)
-    relevant_values = zeros(length(relevant_dofs), 1);
-    for i = 1:length(relevant_dofs)
-        dof_index = find(strcmp(dofs, relevant_dofs{i}));
-        if ~isempty(dof_index)
-            relevant_values(i) = values(dof_index);
         end
     end
 end

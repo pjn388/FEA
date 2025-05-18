@@ -29,21 +29,21 @@ function fea_solve(nodes, elements, constraints, varargin)
     % end
 
     % collect stiffness tables
-    stiffness_tables = cell(1, length(elements));
+    get_stiffness_tables = cell(1, length(elements));
     for i = 1:length(elements)
-        stiffness_tables{1, i} = elements{1, i}.stiffness_table();
+        get_stiffness_tables{1, i} = elements{1, i}.get_stiffness_table();
     end
     % combine the stiffness tables into global table
-    global_K_table = sortrows(combine_tables(stiffness_tables{:}), 'RowNames');
+    global_K_table = sortrows(combine_tables(get_stiffness_tables{:}), 'RowNames');
 
 
     % collect loading tables
-    loading_tables = cell(1, length(elements));
+    get_loading_tables = cell(1, length(elements));
     for i = 1:length(elements)
-        loading_tables{1, i} = elements{1, i}.loading_table();
+        get_loading_tables{1, i} = elements{1, i}.get_loading_table();
     end
     % combine the loading tables into global table
-    global_F_table = sortrows(combine_tables(loading_tables{:}, dosum=false), 'RowNames');
+    global_F_table = sortrows(combine_tables(get_loading_tables{:}, dosum=false), 'RowNames');
 
 
 
