@@ -1,6 +1,6 @@
 
 % standard frame element represents a combined truss and beam element
-classdef FrameElement < Element2D
+classdef FrameElement < Element2Nodes
     properties
         A
         l
@@ -8,10 +8,10 @@ classdef FrameElement < Element2D
         r
     end
     methods
-        function obj = FrameElement(node_1, node_2, A, E, I, r)
-            obj = obj@Element2D(node_1, node_2, ["u", "v", "theta"], E);
+        function obj = FrameElement(node_1, node_2, A, material, I, r)
+            obj = obj@Element2Nodes(node_1, node_2, ["u", "v", "theta"], material);
             obj.A = A;
-            obj.l = abs(sqrt((node_1.x-node_2.x)^2+(node_1.y-node_2.y)^2)); % calculate member length
+            obj.l = abs(sqrt((obj.node_1.x-obj.node_2.x)^2+(obj.node_1.y-obj.node_2.y)^2)); % calculate member length
             obj.I = I;
             obj.r = r; % this is the distance form neutral axis to the beam top/bottom
         end
@@ -43,7 +43,7 @@ classdef FrameElement < Element2D
             T = obj.get_tranformation_matrix();   
             % saving typing
             A = obj.A;
-            E = obj.E;
+            E = obj.material.E;
             l = obj.l;
             I = obj.I;
             

@@ -213,18 +213,18 @@ function [x, y] = get_node_xy(node, isStressed)
     x = node.x;
     y = node.y;
 
-    if isempty(node.displacement) || isempty(node.dof) || ~isStressed
+    if isempty(node.solution) || isempty(node.dof) || ~isStressed
         return;
     end
 
     dof_x_index = find(strcmp(node.dof, 'u'));
     dof_y_index = find(strcmp(node.dof, 'v'));
 
-    if ~isempty(dof_x_index) && dof_x_index <= length(node.displacement)
-        x = x + node.displacement(dof_x_index);
+    if ~isempty(dof_x_index) && dof_x_index <= length(node.solution)
+        x = x + node.solution(dof_x_index);
     end
 
-    if ~isempty(dof_y_index) && dof_y_index <= length(node.displacement)
-        y = y + node.displacement(dof_y_index);
+    if ~isempty(dof_y_index) && dof_y_index <= length(node.solution)
+        y = y + node.solution(dof_y_index);
     end
 end

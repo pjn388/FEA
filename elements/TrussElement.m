@@ -1,14 +1,14 @@
 % Generic truss element
-classdef TrussElement < Element2D
+classdef TrussElement < Element2Nodes
     properties
         A
         l
     end
     methods
-        function obj = TrussElement(node_1, node_2, A, E)
-            obj = obj@Element2D(node_1, node_2, ["u", "v"], E);
+        function obj = TrussElement(node_1, node_2, A, material)
+            obj = obj@Element2Nodes(node_1, node_2, ["u", "v"], material);
             obj.A = A;
-            obj.l = abs(sqrt((node_1.x-node_2.x)^2+(node_1.y-node_2.y)^2)); % calculate member length
+            obj.l = abs(sqrt((obj.node_1.x-obj.node_2.x)^2+(obj.node_1.y-obj.node_2.y)^2)); % calculate member length
 
         end
 
@@ -35,7 +35,7 @@ classdef TrussElement < Element2D
        function stiffness_matrix = get_stiffness_matrix(obj)
             T = obj.get_tranformation_matrix();
             % local stiffness matrix
-            k_local = obj.A*obj.E/obj.l *...
+            k_local = obj.A*obj.material.E/obj.l *...
             [
                 1, -1;
                 -1, 1

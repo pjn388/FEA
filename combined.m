@@ -107,7 +107,7 @@ function do_iteration(I_beam, A_beam, r_beam, A_connect, d_hydrolic, E, name)
     
     % Not used as alternative of solving platform forces was used instead as this was the reccommended method.
     % define constrinsts for MPC solving of complex systems
-    % we have split the structure into a mechanism and a platform and are constraining the displacements between these 2
+    % we have split the structure into a mechanism and a platform and are constraining the solutions between these 2
     constraints = {
         % Constraint(node_B, node_B_p, ["u", "v"]),... % B,B_p
         % Constraint(node_D, node_D_p, ["u", "v"])     % D,D_p

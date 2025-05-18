@@ -1,7 +1,12 @@
-clear all; clc;
-
-
+clear all; clc; clear classes;
+run("init.m")
 run("units.m") % load units
+
+
+% set(0,'DefaultFigureVisible','on')
+% set(0,'DefaultFigureVisible','off')
+
+
 % Material properties
 E = 200 *GPa;
 Yeild = 345 * MPa;
@@ -52,26 +57,28 @@ node_names = {"node_A", "node_B_m", "node_C", "node_D_m", "node_E", "node_F", "n
 A_hydrolic = pi*d_hydrolic^2/4;
 
 
+material = ElasticMaterial("Steel", E);
+
 
 % define the elements
 % mechanism
-element_AF     = FrameElement(node_A          ,node_F     ,A_beam           ,E   ,I_beam,r_beam);
-element_FB_m     = FrameElement(node_F          ,node_B_m     ,A_beam           ,E   ,I_beam,r_beam);
-element_CE     = FrameElement(node_C          ,node_E     ,A_beam           ,E   ,I_beam,r_beam);
-element_ED_m     = FrameElement(node_E          ,node_D_m     ,A_beam           ,E   ,I_beam,r_beam);
-element_EF     = TrussElement(node_E          ,node_F     ,A_connect        ,E     );
-element_FG     = TrussElement(node_F          ,node_G     ,A_hydrolic       ,E     );
+element_AF     = FrameElement(node_A          ,node_F     ,A_beam           ,material   ,I_beam,r_beam);
+element_FB_m     = FrameElement(node_F          ,node_B_m     ,A_beam           ,material   ,I_beam,r_beam);
+element_CE     = FrameElement(node_C          ,node_E     ,A_beam           ,material   ,I_beam,r_beam);
+element_ED_m     = FrameElement(node_E          ,node_D_m     ,A_beam           ,material   ,I_beam,r_beam);
+element_EF     = TrussElement(node_E          ,node_F     ,A_connect        ,material     );
+element_FG     = TrussElement(node_F          ,node_G     ,A_hydrolic       ,material     );
 
 % platoform
-element_B_pD_p =FrameElement(node_B_p        ,node_D_p        ,A_platform       ,E   ,I_platform,10*mm);
-element_B_pH   =FrameElement(node_B_p        ,node_H          ,A_platform       ,E   ,I_platform,10*mm);
-element_HI     =FrameElement(node_H          ,node_I          ,A_platform       ,E   ,I_platform,10*mm);
+element_B_pD_p =FrameElement(node_B_p        ,node_D_p        ,A_platform       ,material   ,I_platform,10*mm);
+element_B_pH   =FrameElement(node_B_p        ,node_H          ,A_platform       ,material   ,I_platform,10*mm);
+element_HI     =FrameElement(node_H          ,node_I          ,A_platform       ,material   ,I_platform,10*mm);
 
 elements = {element_AF, element_FB_m, element_CE, element_ED_m, element_EF, element_FG, element_B_pD_p, element_B_pH, element_HI};
 element_names = {"element_AF", "element_FB_m", "element_CE", "element_ED_m", "element_EF", "element_FG", "element_BD", "element_B_pD_p", "element_B_pH", "element_HI"};
 
 % define constrinsts for MPC solving of complex systems
-% we have split the structure into a mechanism and a platform and are constraining the displacements between these 2
+% we have split the structure into a mechanism and a platform and are constraining the solutions between these 2
 constraints = {
     Constraint(node_B_m, node_B_p, ["u", "v"]),... % B,B_p
     Constraint(node_D_m, node_D_p, ["u", "v"])     % D,D_p
@@ -83,8 +90,10 @@ node_H.apply_loading(["u", "v"], [0, -400 * lb * g]); % H
 node_I.apply_loading(["u", "v"], [0, -300 * lb * g]); % I
 
 
-% Do all the calculations with this configured setup
-run("main.m")
+% % Do all the calculations with this configured setup
+% run("main.m")
+
+fea_solve(nodes, elements, constraints)
 
 % Find and record maximum stresses
 max_stresses = zeros(1, numel(elements));

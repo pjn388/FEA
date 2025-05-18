@@ -6,7 +6,7 @@ classdef Node2D < handle
         y
         dof
         loading
-        displacement
+        solution
         uuid
         constrained_dof
     end
@@ -17,7 +17,7 @@ classdef Node2D < handle
             obj.y = y;
             obj.dof = [];
             obj.loading = [];
-            obj.displacement = [];
+            obj.solution = [];
             obj.uuid = extractBefore(string(java.util.UUID.randomUUID), 9); % generate a random uuid for each node. thx java i guess?
             obj.constrained_dof = [];
         end
@@ -38,20 +38,23 @@ classdef Node2D < handle
             obj = obj;
         end
 
-        function obj = set_displacement(obj, dofs, displacements)
-            % Iterate through the dofs and apply the corresponding displacement state
+        function obj = set_solution(obj, dofs, solutions)
+            % Iterate through the dofs and apply the corresponding solution state
             for i = 1:length(dofs)
                 idx = find(obj.dof == dofs(i), 1);
                 if ~isempty(idx)
-                    if isempty(obj.displacement)
-                        obj.displacement = zeros(1, length(obj.dof));
+                    if isempty(obj.solution)
+                        obj.solution = zeros(1, length(obj.dof));
                     end
-                    obj.displacement(idx) = displacements(i);
+                    obj.solution(idx) = solutions(i);
                 else
-                    error('Cannot apply a displacement for dof '+dofs(1)+' as that dof does not exist for this node.')
+                    error('Cannot apply a solution for dof '+dofs(1)+' as that dof does not exist for this node.')
                 end
             end
             obj = obj;
+        end
+
+        function obj = apply_constraint(obj) % Node interface function
         end
 
         function out = display_(obj)
@@ -62,13 +65,13 @@ classdef Node2D < handle
             else
                 loadingStr = strjoin(arrayfun(@num2str, obj.loading, 'UniformOutput', false), ', ');
             end
-            if isempty(obj.displacement)
-                displacementStr = '[]';
+            if isempty(obj.solution)
+                solutionStr = '[]';
             else
-                displacementStr = strjoin(arrayfun(@num2str, obj.displacement, 'UniformOutput', false), ', ');
+                solutionStr = strjoin(arrayfun(@num2str, obj.solution, 'UniformOutput', false), ', ');
             end
             % btw i hate matlab string bashing
-            out = strjoin([className, '(',obj.uuid,'): x = ', num2str(obj.x), ', y = ', num2str(obj.y), ', dof = [',strjoin(string(obj.dof), ", "), '], loading = [', loadingStr, '], displacement = [', displacementStr, ']'], '');
+            out = strjoin([className, '(',obj.uuid,'): x = ', num2str(obj.x), ', y = ', num2str(obj.y), ', dof = [',strjoin(string(obj.dof), ", "), '], loading = [', loadingStr, '], solution = [', solutionStr, ']'], '');
         end
         
         % Anotehr helpfull display method for nodes
