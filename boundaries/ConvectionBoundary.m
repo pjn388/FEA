@@ -11,7 +11,7 @@ classdef ConvectionBoundary < Boundary
             obj.h = h;
             obj.T_f = T_f;
             obj.l = abs(sqrt((obj.node_a.x-obj.node_b.x)^2+(obj.node_a.y-obj.node_b.y)^2)); % calculate member length
-
+            obj.colour = 'blue';
         end
         
         function stiffness_matrix = get_stiffness_matrix(obj) % this is overwritten by the child classes based upon the element type

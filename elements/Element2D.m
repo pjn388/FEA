@@ -1,17 +1,18 @@
 % Represents a base 2D element
-classdef Element2D
+classdef Element2D < handle
     properties (Access = private) % ensure these cannot be public accessed as they may not be in a correct state unless accessed by the getter
         stiffness_matrix
         loading_matrix
         shape_matrix
         solution_matrix
     end
-
+    
     properties
         nodes
         dof
         material
         T
+        colour
     end
     
     methods
@@ -19,6 +20,7 @@ classdef Element2D
             obj.nodes = nodes;
             obj.dof = dof;
             obj.material = material;
+            obj.colour = 'magenta'; % universal error colour
 
             for i = 1:length(nodes)
                 % update node dof so the nodes know how many dof they have based upon the elements that use them

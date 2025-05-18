@@ -9,6 +9,7 @@ classdef Node2D < handle
         solution
         uuid
         constrained_dof
+        colour
     end
 
     methods
@@ -20,6 +21,7 @@ classdef Node2D < handle
             obj.solution = [];
             obj.uuid = extractBefore(string(java.util.UUID.randomUUID), 9); % generate a random uuid for each node. thx java i guess?
             obj.constrained_dof = [];
+            obj.colour = 'black';
         end
         
         function obj = apply_loading(obj, dofs, loadings)
@@ -77,6 +79,9 @@ classdef Node2D < handle
         % Anotehr helpfull display method for nodes
         function display(obj)
             disp(obj.display_())
+        end
+        function render_structure(obj)
+            plot(obj.x, obj.y, "o", 'MarkerFaceColor', obj.colour, 'MarkerEdgeColor', obj.colour, 'MarkerSize', 8);
         end
     end
 end

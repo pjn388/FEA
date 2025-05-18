@@ -3,6 +3,7 @@ classdef Boundary
     properties
         node_a
         node_b
+        colour
     end
     
     methods
@@ -17,6 +18,9 @@ classdef Boundary
         end
         function T = get_loading_table(obj)
             T = matrix_to_table(obj.get_loading_matrix(), {obj.node_a, obj.node_b}, ["T"], isload=true);
+        end
+        function render_structure(obj)
+            plot([obj.node_a.x, obj.node_b.x], [obj.node_a.y, obj.node_b.y], 'Color', obj.colour, 'LineWidth', 2)
         end
     end
 end

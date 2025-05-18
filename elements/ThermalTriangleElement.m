@@ -8,6 +8,7 @@ classdef ThermalTriangleElement < Element3Nodes
         function obj = ThermalTriangleElement(node_1, node_2, node_3, material, q_dot)
             obj = obj@Element3Nodes(node_1, node_2, node_3, ["T",], material);
             obj.q_dot = q_dot;
+            obj.colour = '#cccccc';
         end
         
         % add boundaries to the tracked list
@@ -85,6 +86,17 @@ classdef ThermalTriangleElement < Element3Nodes
                 "T_2", get_relevant_dof(obj.node_2.dof, obj.node_2.solution, ["T",]), ...
                 "T_3", get_relevant_dof(obj.node_3.dof, obj.node_3.solution, ["T",]), ...
             ];
+        end
+
+        function render_structure(obj)
+            patch('Vertices', [obj.node_1.x, obj.node_1.y; obj.node_2.x, obj.node_2.y; obj.node_3.x, obj.node_3.y], 'Faces', [1, 2, 3], 'FaceColor', obj.colour);
+            disp(obj.boundaries)
+            for i = 1:length(obj.boundaries)
+                obj.boundaries{i}.render_structure()
+            end
+            obj.node_1.render_structure()
+            obj.node_2.render_structure()
+            obj.node_3.render_structure()
         end
         
     end
