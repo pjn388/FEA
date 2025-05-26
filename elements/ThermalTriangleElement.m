@@ -1,11 +1,11 @@
 % Generic truss element
-classdef ThermalTriangleElement < Element3Nodes
+classdef ThermalTriangleElement < Element3Nodes & Thermal
     properties
         q_dot
-        boundaries cell
     end
     methods
         function obj = ThermalTriangleElement(node_1, node_2, node_3, material, q_dot)
+            obj = obj@Thermal();
             obj = obj@Element3Nodes(node_1, node_2, node_3, ["T",], material);
             obj.q_dot = q_dot;
             obj.colour = '#cccccc';
@@ -89,6 +89,7 @@ classdef ThermalTriangleElement < Element3Nodes
         end
 
         function render_structure(obj)
+
             patch('Vertices', [obj.node_1.x, obj.node_1.y; obj.node_2.x, obj.node_2.y; obj.node_3.x, obj.node_3.y], 'Faces', [1, 2, 3], 'FaceColor', obj.colour);
             disp(obj.boundaries)
             for i = 1:length(obj.boundaries)

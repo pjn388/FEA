@@ -88,16 +88,50 @@ function fea_solve(nodes, elements, constraints, varargin)
         end
     end
 
+    % apply thermal fixed temperature constraints
+    for i = 1:length(elements)
+        if ~isa(elements{i}, 'Thermal')
+            continue;
+        end
+
+        for j = 1:length(elements{i}.boundaries)
+            boundary = elements{i}.boundaries{j};
+            if ~isa(boundary, 'FixedTemperatureBoundary')
+                continue;
+            end
+            % we need to zero out all temperature parts of the stiffness table that are associated with this boundary condition
+            % then set a 1 in the stiffness where the temp for this boundary will be multiplied across to 1
+            % then set the solution vector for this boundary to the fixed temp
+
+            % zeroing and setitng the identity bit for the boundaries
+            node_a_row_name = "Node_" + boundary.node_a.uuid + "_" + "T";
+            global_K_table{node_a_row_name, :} = zeros(1, width(global_K_table));
+            global_K_table{node_a_row_name, node_a_row_name} = 1;
+
+            node_b_row_name = "Node_" + boundary.node_b.uuid + "_" + "T";
+            global_K_table{node_b_row_name, :} = zeros(1, width(global_K_table));
+            global_K_table{node_b_row_name, node_b_row_name} = 1;
+
+            % setting the fixed temp in the solution vector
+
+
+            node_a_row_name = "Node_" + boundary.node_a.uuid + "_" + "T";
+            global_F_table{node_a_row_name, 'Load_1'} = boundary.T_fixed;
+
+            node_b_row_name = "Node_" + boundary.node_b.uuid + "_" + "T";
+            global_F_table{node_b_row_name, 'Load_1'} = boundary.T_fixed;
+
+
+            disp(boundary)
+        end
+    end
+
     % apply the fixed node boundary conditions
     % go through the stiffness table and force table and eliminate the fixed nodes rows and columns
 
     % Create a list of row/column names to eliminate based on fixed nodes
     rows_to_eliminate = {};
     for i = 1:length(nodes)
-        % if ~isa(nodes{i}, 'FixedNode2D') && ~isa(nodes{i}, 'PinnedNode2D')  % ignore Free nodes
-        %     continue;
-        % end
-
         node = nodes{1, i};
         for dof_index = 1:length(node.dof)
             if isempty(node.constrained_dof) % Why does matlab make this line neccessary this is some dumb language
@@ -190,4 +224,5 @@ function fea_solve(nodes, elements, constraints, varargin)
     % render displaced mesh
     hold on;
     render_structure(elements, nodes, true, legendHandles, legendLabels, name);
+
 end
