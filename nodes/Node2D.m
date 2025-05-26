@@ -121,7 +121,7 @@ classdef Node2D < handle
                 end
 
 
-                text(obj.x+0.004, obj.y+0.004, prettyString, 'FontSize', 8, 'HorizontalAlignment', 'center');
+                text(obj.x+0.004, obj.y+0.004, prettyString, 'FontSize', 20, 'HorizontalAlignment', 'center');
 
 
         end

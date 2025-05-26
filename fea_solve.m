@@ -34,7 +34,7 @@ function fea_solve(nodes, elements, constraints, varargin)
         get_stiffness_tables{1, i} = elements{1, i}.get_stiffness_table();
     end
     % combine the stiffness tables into global table
-    global_K_table = sortrows(combine_tables(get_stiffness_tables{:}), 'RowNames');
+    global_K_table = combine_tables(get_stiffness_tables{:});
 
 
     % collect loading tables
@@ -43,7 +43,7 @@ function fea_solve(nodes, elements, constraints, varargin)
         get_loading_tables{1, i} = elements{1, i}.get_loading_table();
     end
     % combine the loading tables into global table
-    global_F_table = sortrows(combine_tables(get_loading_tables{:}, dosum=false), 'RowNames');
+    global_F_table = combine_tables(get_loading_tables{:}, dosum=false);
 
 
 
@@ -120,9 +120,6 @@ function fea_solve(nodes, elements, constraints, varargin)
 
             node_b_row_name = "Node_" + boundary.node_b.uuid + "_" + "T";
             global_F_table{node_b_row_name, 'Load_1'} = boundary.T_fixed;
-
-
-            disp(boundary)
         end
     end
 
@@ -179,7 +176,7 @@ function fea_solve(nodes, elements, constraints, varargin)
 
         % Check that verticies were found
         if (isempty(index_to_substitute) || isempty(index_substitute_with))
-            disp("ERROR: vertex not found in array")
+            disp("ERROR: vertex not found in array");
             continue
         end
 

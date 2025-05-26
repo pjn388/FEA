@@ -32,7 +32,7 @@ classdef Thermal1D < Element2Nodes & Thermal
             node_loading = get_loading_matrix@Element2Nodes(obj);
             l = abs(sqrt((obj.node_1.x-obj.node_2.x)^2+(obj.node_1.y-obj.node_2.y)^2)); % calculate member length
 
-            F = (obj.h_surround*obj.p*l*obj.T_f)/2*[1;1] + [obj.h_node_1*obj.A*obj.T_f; 0] + [0; obj.h_node_1*obj.A*obj.T_f];
+            F = (obj.h_surround*obj.p*l*obj.T_f)/2*[1;1] + [obj.h_node_1*obj.A*obj.T_f; 0] + [0; obj.h_node_2*obj.A*obj.T_f];
 
             loading_matrix = node_loading + F;
         end
