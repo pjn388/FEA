@@ -13,6 +13,7 @@ classdef Node2D < handle
         uuid
         constrained_dof
         colour
+        q_flux % this is a dodgy hack in solution
     end
 
     methods
@@ -76,7 +77,7 @@ classdef Node2D < handle
                 solutionStr = strjoin(arrayfun(@num2str, obj.solution, 'UniformOutput', false), ', ');
             end
             % btw i hate matlab string bashing
-            out = strjoin([className, '(',obj.uuid,'): x = ', num2str(obj.x), ', y = ', num2str(obj.y), ', dof = [',strjoin(string(obj.dof), ", "), '], loading = [', loadingStr, '], solution = [', solutionStr, ']'], '');
+            out = strjoin([className, '(',obj.uuid,'): x = ', num2str(obj.x), ', y = ', num2str(obj.y), ', dof = [',strjoin(string(obj.dof), ", "), '], loading = [', loadingStr, '], solution = [', solutionStr, '], q_flux = ', obj.q_flux, ''], '');
         end
 
         function tf = eq(obj1, obj2)
@@ -120,6 +121,9 @@ classdef Node2D < handle
                     prettyString = prettyString + obj.dof(i) + ": " + num2str(obj.solution(i)) + newline;
                 end
 
+                if length(obj.q_flux) > 0
+                    prettyString = prettyString + "q_{flux}: "+num2str(obj.q_flux * 10^-6) + newline;
+                end
 
                 text(obj.x+0.004, obj.y+0.004, prettyString, 'FontSize', 20, 'HorizontalAlignment', 'center');
 

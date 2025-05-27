@@ -34,7 +34,7 @@ function fea_solve(nodes, elements, constraints, varargin)
         get_stiffness_tables{1, i} = elements{1, i}.get_stiffness_table();
     end
     % combine the stiffness tables into global table
-    global_K_table = combine_tables(get_stiffness_tables{:});
+    global_K_table = sortrows(combine_tables(get_stiffness_tables{:}), 'RowNames');
 
 
     % collect loading tables
@@ -43,7 +43,7 @@ function fea_solve(nodes, elements, constraints, varargin)
         get_loading_tables{1, i} = elements{1, i}.get_loading_table();
     end
     % combine the loading tables into global table
-    global_F_table = combine_tables(get_loading_tables{:}, dosum=false);
+    global_F_table = sortrows(combine_tables(get_loading_tables{:}), 'RowNames');
 
 
 
@@ -87,6 +87,11 @@ function fea_solve(nodes, elements, constraints, varargin)
             global_K_table{row_name_1, row_name_1} = 1;
         end
     end
+
+    % save the sumbolic
+
+    symbolic_global_K_table = global_K_table;
+    symbolic_global_F_table = global_F_table;
 
     % apply thermal fixed temperature constraints
     for i = 1:length(elements)
@@ -163,7 +168,9 @@ function fea_solve(nodes, elements, constraints, varargin)
     end
 
     % calculate the solutions
-    solutions = inv(global_K)*global_F;
+    % If u encounter an error on this line then you are trying to use symbolics
+    % this program uses but doesnt support symbolics its simply a hack ive used to calculate reactive heat flux
+    solutions = inv(double(global_K))*double(global_F);
 
     % elimated dof's will have the same value as the dos that elimated them. sub that value back into solutions
     for i = 1:length(eliminated_dofs)
@@ -184,13 +191,16 @@ function fea_solve(nodes, elements, constraints, varargin)
         solutions(index_to_substitute) = solutions(index_substitute_with);
     end
 
-    % not used but might be usfull later
-    % eq = symbolic_vars == double(solutions);
+    % calculate reactive heat flux
+    symbolic_global_K = table2array(symbolic_global_K_table)
+    symbolic_global_F = table2array(symbolic_global_F_table)
+
+    symbolic_eq = symbolic_global_F == symbolic_global_K * solutions
 
     % factor to exagerate the solution by for rendering
     exageration_factor = 1;
 
-    % iterate through the nodes and add the solutions to their position
+    % iterate through the nodes and add the solutions to their solutions
     for i = 1:length(nodes)
         if isa(nodes{i}, 'FixedNode2D') || isa(nodes{i}, 'PinnedNode2D')
             continue;
@@ -215,6 +225,9 @@ function fea_solve(nodes, elements, constraints, varargin)
             node_solutions(dof_index) = solutions(solution_index);
         end
         node.set_solution(node.dof, node_solutions);
+        if ~isempty(symvar(symbolic_eq(solution_index)))
+            node.q_flux = double(solve(symbolic_eq(solution_index), sym("q_flux")));
+        end
         disp("node_"+node_names{i}+": "+node.display_())
     end
 

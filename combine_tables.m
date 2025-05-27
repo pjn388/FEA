@@ -35,6 +35,8 @@ function combinedTable = combine_tables(varargin)
     combinedTable = array2table(zeros(length(allRowNames), length(allVarNames)), ...
         'RowNames', allRowNames, 'VariableNames', allVarNames);
 
+    combinedTable = tableToSym(combinedTable);
+
     for k = 1:length(tables)
         currentTable = tables{k};
         % Loop through each element in the current table, accumulating values into combinedTable
