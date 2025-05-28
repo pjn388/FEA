@@ -1,6 +1,6 @@
-# Structural Analysis Script
+# Thermal & Structural Analysis Script
 
-This script performs structural analysis on a given set of nodes, elements, and constraints. It calculates displacements and renders both the initial and displaced structures.
+This script performs thermal and structural analysis on a given set of nodes, elements, and constraints. It calculates solutions and renders both the initial and displaced/temperature distributions.
 
 ## Dependencies
 
@@ -8,43 +8,49 @@ This script performs structural analysis on a given set of nodes, elements, and 
 
 ## Usage
 
-1.  **Define Nodes:** Specify the location and properties of nodes using classes like `FixedNode2D` and `Node2D`.
-2.  **Define Elements:** Define structural elements (e.g., `FrameElement`, `TrussElement`) connecting the nodes, along with their properties (A, E, I).
-3.  **Define Constraints:**  Specify constraints between nodes using the `Constraint` class, particularly for Multi-Point Constraints (MPC) to connect complex sub-structures.
-4.  **Apply Loads:** Apply loads to the nodes using the `apply_loading` method.
-5.  **Run the Analysis:** Execute the `main.m` script.
+1.  **Define Nodes:** Specify node locations using classes like `FixedNode2D` and `Node2D`.
+2.  **Define Elements:** Define structural elements (`FrameElement`, `TrussElement`) or thermal elements (`ThermalTriangleElement`, `ThermalRectangleElement`, `Thermal1D`) connecting the nodes, along with their properties.
+3.  **Define Constraints:**  Specify constraints between nodes using the `Constraint` class for Multi-Point Constraints (MPC) to connect complex sub-structures.
+4.  **Apply Loads/Boundaries:** Apply loads to nodes (structural) or boundary conditions to elements (thermal) using methods like `apply_loading`, `apply_boundary`.
+5.  **Run the Analysis:** Execute the `fea_solve` function.
 
 ## File Descriptions
 
--   `combined.m`:  Defines the structural model including nodes, elements, constraints, and loads.  This is the primary setup file.
--   `main.m`:  Performs the structural analysis calculations, applies constraints, solves for displacements, and renders the results.
+-   `thermal.m`: Defines the thermal model including nodes, elements, and boundary conditions. This is a primary setup file example.
+-   `combined.m`: Example structural setup
+-   `fea_solve.m`: Performs the analysis calculations, applies constraints, solves for solutions, and renders the results.
+-   `init.m`: Used to initialize the file by adding all foldes
+-   `units.m`: Used to set units
 
 ## Classes
 
 -   `FixedNode2D`: Represents a fixed node in 2D space.
--   `Node2D`: Represents a node in 2D space with free displacement.
+-   `Node2D`: Represents a node in 2D space with free solutions.
 -   `FrameElement`: Represents a frame element with axial, shear, and bending stiffness.
 -   `TrussElement`: Represents a truss element with axial stiffness only.
--   `Constraint`:  Defines a constraint between two nodes, linking their degrees of freedom (DOFs).
+-   `Constraint`: Defines a constraint between two nodes, linking their degrees of freedom (DOFs).
+-   `ThermalTriangleElement`: Represents a thermal triangle element.
+-   `ThermalRectangleElement`: Represents a thermal rectangle element.
+-   `Thermal1D`: Represents a 1D thermal element (e.g., for convection).
+-   `ThermalMaterial`: Defines thermal material properties (thermal conductivity).
+-   `FixedTemperatureBoundary`: Defines a fixed temperature boundary condition.
+-   `HeatFluxBoundary`: Defines a heat flux boundary condition.
+-   `ConvectionBoundary`: Defines a convection boundary condition.
 
 ## Workflow
 
-1.  The `combined.m` script sets up the structural model.
-2.  `main.m` computes element stiffness tables, combines them into a global stiffness matrix (`global_K_table`), and creates a global force vector (`global_F_table`).
-3.  Constraints are applied to the global stiffness matrix by merging constrained DOFs.
-4.  Fixed boundary conditions are applied by eliminating rows and columns from the global stiffness matrix and force vector.
-5.  The system of equations is solved to determine displacements.
-6.  Displacements from constrainted dof's are back substituted.
-7.  The deformed structure is rendered, with displacements exaggerated for visibility.
-
+1.  A setup script (`thermal.m` or `combined.m`) defines the model.
+2.  `fea_solve.m` computes element stiffness (structural) or conductance (thermal) matrices, combines them into a global matrix (`global_K_table`), and creates a global force/heat flow vector (`global_F_table`).
+3.  Constraints are applied to the global matrix by merging constrained DOFs.
+4.  Fixed boundary conditions are applied by eliminating rows and columns from the global matrix and force/heat flow vector.
+5.  The system of equations is solved to determine solutions (displacements or temperatures).
+6.  Solutions from constrainted dof's are back substituted.
+7.  The deformed structure or temperature distribution is rendered, with solutions exaggerated for visibility (structural) or displayed as a heatmap (thermal).
 ## Notes
 
--   The script is designed to be extendable to 3D or more than 2 nodes per element, but this would require significant modifications.
--   The `in` and `lb` variables in `combined.m` convert to SI units.
--   The `exageration_factor` in `main.m` controls the displacement scaling for rendering.
--   Comments in the code provide additional details on the implementation.
-
-
+-   The script can be extended to 3D or more complex elements with modifications.
+-   Units must be defined correctly.
+-   The `exageration_factor` (structural) controls the solution scaling for rendering.
 ## Donations
 
 * monero:83B495T1N3sje9vXMqNShbSx99g1QjKyL8YKjvU6rt6hAkmwbVUrQ65QGEUsL3QxVPdtiK91GnCP7bG2oCz7h1PDKsoCPB1
